@@ -1,0 +1,11 @@
+schema: ${NEXT_PUBLIC_SUPABASE_GRAPHQL_URL}
+documents: "src/**/*.graphql"
+generates:
+  src/gql/graphql.ts:
+    plugins:
+      - "typescript"
+      - "typescript-operations"
+      - "typescript-urql"
+    config:
+      maybeValue: T | null
+YML
