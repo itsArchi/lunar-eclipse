@@ -3,16 +3,16 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "dev": "next dev",
         "build": "next build",
         "start": "next start",
         "start:dev": "next dev --port 3000",
         "lint": "eslint",
-        "codegen": "graphql-codegen --config codegen.yml"
+        "codegen": "graphql-codegen --config codegen.config.js"
     },
     "dependencies": {
         "@mediapipe/tasks-vision": "^0.10.9",
         "@next-auth/supabase-adapter": "^0.2.1",
+        "@supabase/ssr": "^0.0.10",
         "@supabase/supabase-js": "^2.81.1",
         "@urql/core": "^6.0.1",
         "@urql/devtools": "^2.0.3",
@@ -49,6 +49,7 @@
         "@types/react-dom": "^19",
         "autoprefixer": "^10.4.22",
         "babel-plugin-react-compiler": "1.0.0",
+        "dotenv": "^17.2.3",
         "eslint": "^9",
         "eslint-config-next": "16.0.3",
         "jest": "^30.2.0",

@@ -9,6 +9,9 @@ module.exports = {
             fontFamily: {
                 nunito: ["Nunito Sans", "sans-serif"],
             },
+            backgroundImage: {
+                backdropJob: "url('/assets/image/backdrop-card-job.jpg')",
+            },
             // STYLEGUIDE COLORS
             colors: {
                 primary: {

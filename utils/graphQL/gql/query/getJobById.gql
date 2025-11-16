@@ -1,0 +1,12 @@
+query GetJobById($id: String!) {
+    jobsCollection(filter: { id: { eq: $id } }) {
+        nodes {
+            id
+            slug
+            title
+            salary_range
+            list_card
+            created_at
+        }
+    }
+}

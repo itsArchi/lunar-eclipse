@@ -17,14 +17,14 @@ interface InputPros {
     value?: string | number;
     defaultValue?: string | number;
     type?: "text" | "password" | "number";
-    inputType?: "basic" | "dropdown-select";
-    dropdownItems?: Array<string>;
+    inputType?: "basic";
     state?: "normal" | "error";
     maxLength?: number;
     onChange?: ChangeEventHandler<HTMLInputElement>;
     onBlur?: any;
     onFocus?: any;
     onInput?: Function;
+    onClick?: MouseEventHandler<HTMLInputElement>;
     isDisabled?: boolean;
     placeholder?: string;
     errorMessage?: string;
@@ -42,7 +42,6 @@ const InputElement = (
         defaultValue,
         type,
         inputType = "basic",
-        dropdownItems,
         state = "normal",
         maxLength,
         isDisabled,
@@ -70,11 +69,11 @@ const InputElement = (
     const conditionalStyle = clsx({
         "bg-greyscale-20 cursor-not-allowed": isDisabled,
         "bg-bluescale-20 hover:bg-accent-white focus:bg-[#F2F2F2]": !isDisabled,
-        "border border-accent-red": state === "error",
+        "border border-danger-main": state === "error",
     });
 
     const baseStyle = `
-      flex h-10 w-full rounded-md border-[1px] border-input bg-background px-2 py-2 text-neutral-90 text-base file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-neutral-80 focus:outline-none
+      flex h-10 w-full rounded-md border-[2px] border-input border-neutral-40 px-2 py-2 text-neutral-90 text-base file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-neutral-40 focus:outline-none
       shadow-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm
       ${conditionalStyle}
   `;
@@ -84,10 +83,10 @@ const InputElement = (
                 <label className="text-12 leading-20 font-400 text-neutral-90">
                     {label}
                 </label>
-                {required && <label className="text-accent-red">*</label>}
+                {required && <label className="text-danger-main">*</label>}
             </div>
             <div className="flex">
-                {(inputType === "basic" || inputType === "dropdown-select") && (
+                {inputType === "basic" && (
                     <div className="relative w-full h-fit">
                         <input
                             name={name}
@@ -136,31 +135,9 @@ const InputElement = (
                         )}
                     </div>
                 )}
-                {inputType === "dropdown-select" && (
-                    <>
-                        <input
-                            type="text"
-                            className={baseStyle}
-                            disabled={isDisabled}
-                            placeholder={placeholder}
-                        />
-                        <datalist
-                            id="countries"
-                            className="absolute overflow-y-auto"
-                        >
-                            <option selected disabled>
-                                {placeholder}
-                            </option>
-                            {dropdownItems &&
-                                dropdownItems.map((item) => (
-                                    <option value={item}>{item}</option>
-                                ))}
-                        </datalist>
-                    </>
-                )}
             </div>
             {state == "error" && (
-                <p className="font-nunito text-12 leading-20 text-accent-red">
+                <p className="font-nunito text-12 leading-20 text-danger-main">
                     {errorMessage}
                 </p>
             )}

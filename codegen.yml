@@ -1,11 +1,18 @@
-schema: ${NEXT_PUBLIC_SUPABASE_GRAPHQL_URL}
-documents: "src/**/*.graphql"
+schema: ${NEXT_PUBLIC_SUPABASE_URL}/api/graphql
+overwrite: true
+
 generates:
-  src/gql/graphql.ts:
-    plugins:
-      - "typescript"
-      - "typescript-operations"
-      - "typescript-urql"
-    config:
-      maybeValue: T | null
-YML
+    graphQL/generated.tsx:
+        documents: "**/**.gql"
+        plugins:
+            - "typescript"
+            - "typescript-operations"
+            - "typescript-urql"
+        config:
+            withComponent: false
+            withHooks: true
+            maybeValue: T | null | undefined
+            enumsAsTypes: true
+hooks:
+    afterAllFileWrite:
+        - prettier --write

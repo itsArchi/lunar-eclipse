@@ -1,0 +1,15 @@
+query GetJobs {
+    jobsCollection {
+        nodes {
+            id
+            slug
+            title
+            status
+            salary_range
+            list_card
+            metadata
+            created_at
+        }
+        totalCount
+    }
+}

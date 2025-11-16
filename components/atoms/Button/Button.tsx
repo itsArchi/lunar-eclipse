@@ -64,16 +64,14 @@ export const Button = ({
             type === "solid" && !isDisabled,
         "bg-primary-main text-neutral-10 opacity-50":
             type === "solid" && isDisabled,
-        "bg-transparent border-2 border-primary-main hover:bg-primary-main text-primary-main":
+        "bg-neutral-10 border border-neutral-40 hover:bg-primary-main hover:text-neutral-10 text-neutral-90":
             type === "outline" && !isDisabled,
-        "bg-transparent border-2 border-primary-main text-primary-main opacity-50":
+        "bg-neutral-10 border border-neutral-40 text-neutral-90 opacity-50 cursor-not-allowed":
             type === "outline" && isDisabled,
         "bg-primary-main text-neutral-10": type === "primary" && !isDisabled,
-        // "bg-primary-main text-neutral-10 opacity-50":
-        //     type === "primary" && isDisabled,
-        "bg-secondary-main text-neutral-100":
+        "bg-secondary-main text-neutral-90":
             type === "secondary" && !isDisabled,
-        "bg-secondary-main text-neutral-100 opacity-50":
+        "bg-secondary-main text-neutral-90 opacity-50":
             type === "secondary" && isDisabled,
         "bg-danger-main text-neutral-10": type === "danger" && !isDisabled,
         "bg-danger-main text-neutral-10 opacity-50":
@@ -111,7 +109,7 @@ export const Button = ({
 
     return (
         <button
-            className={`inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium font-inter ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 ${className} ${containerSize} ${buttonColor} ${fontStyle} ${buttonSize} ${roundedSize}`}
+            className={`inline-flex items-center justify-center gap-2 whitespace-nowrap text-base font-bold font-nunito ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 ${className} ${containerSize} ${buttonColor} ${fontStyle} ${buttonSize} ${roundedSize}`}
             onClick={onClick}
             type={buttonType}
             disabled={isDisabled}
