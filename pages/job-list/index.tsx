@@ -1,4 +1,6 @@
+import Image from "next/image";
 import Search from "../../components/atoms/Search/Search";
+import empty from "../../public/assets/image/empty.svg"
 
 const JobListPage = () => {
     return (
@@ -9,7 +11,14 @@ const JobListPage = () => {
                     Avatar
                 </div>
             </div>
-            <Search value="" onChange={(value) => {}} />
+            <div className="px-8 py-6 border w-[70%]">
+                <div>
+                    <Search value="" onChange={(value) => {}} />
+                </div>
+                <div>
+                    <Image src={empty} width={200} height={200} alt="empty" />
+                </div>
+            </div>
         </div>
     );
 }

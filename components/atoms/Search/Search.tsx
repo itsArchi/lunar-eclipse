@@ -10,18 +10,18 @@ const Search = ({
     className?: string;
 }) => {
     return (
-        <div className="relative w-1/2">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <SearchIcon className="h-5 w-5 !text-neutral-60" />
-            </div>
+        <div className="relative w-full">
             <input
                 type="text"
-                placeholder="Search"
+                placeholder="Search by job details"
                 onChange={(e) => {
                     onChange(e.target.value);
                 }}
-                className={`w-full pl-10 pr-4 py-2 border rounded-full focus:ring-2 focus:border-transparent placeholder:text-sm text-sm text-brand-black placeholder:opacity-50 placeholder:text-brand-black ${className}`}
+                className={`w-full pl-2 pr-4 py-2 border-2 border-neutral-30 rounded-lg focus:ring-2 focus:border-transparent placeholder:text-14 text-14 text-neutral-100 placeholder:opacity-50 placeholder:text-neutral-800 ${className}`}
             />
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                <SearchIcon className="h-5 w-5 !text-primary-main" />
+            </div>
         </div>
     );
 };
