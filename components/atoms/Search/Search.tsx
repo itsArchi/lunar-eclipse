@@ -4,16 +4,18 @@ const Search = ({
     onChange,
     value,
     className,
+    placeholder
 }: {
     onChange: (value: string) => void;
     value: string;
     className?: string;
+    placeholder?: string;
 }) => {
     return (
         <div className="relative w-full max-h-10">
             <input
                 type="text"
-                placeholder="Search by job details"
+                placeholder={placeholder}
                 onChange={(e) => {
                     onChange(e.target.value);
                 }}

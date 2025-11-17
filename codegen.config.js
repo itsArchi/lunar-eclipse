@@ -1,19 +1,16 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 import dotenv from "dotenv";
 dotenv.config();
 
-module.exports = {
-    schema: [
-        {
-            url: `${
-                process.env.NEXT_PUBLIC_SUPABASE_URL ||
-                "https://abamuktjmrrbqhudpide.supabase.co"
-            }/graphql/v1`,
+const config = {
+    schema: {
+        [process.env.NEXT_PUBLIC_SUPABASE_URL || "https://abamuktjmrrbqhudpide.supabase.co"]: {
             headers: {
                 apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
                 Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
             },
         },
-    ],
+    },
     overwrite: true,
     documents: "src/graphql/**/*.gql",
     generates: {
@@ -31,3 +28,5 @@ module.exports = {
         afterAllFileWrite: ["prettier --write"],
     },
 };
+
+export default config;
