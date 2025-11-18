@@ -1,47 +1,162 @@
 import { Formik, Form, Field, FieldProps } from "formik";
+import * as Yup from "yup";
 import { Input } from "../../atoms/Input/Input";
 import { InputSelect } from "../../atoms/InputSelect/InputSelect";
-import * as Yup from "yup";
 import { Textarea } from "../../atoms/TextArea/TextArea";
 import { MultiChip } from "../MultiChip/MultiChip";
+import axios from "axios";
 
 interface JobFormValues {
-    name: string;
-    type: string;
-    description: string;
-    maxCandidates: string;  
+    slug: string;
+    title: string;
+    status: string;
     minSalary: string;
     maxSalary: string;
+    currency: string;
+    badge: string;
+    started_on_text: string;
+    cta: string;
 }
 
 const JobFormInitialValues: JobFormValues = {
-    name: "",
-    type: "",
-    description: "",
-    maxCandidates: "",
+    slug: "",
+    title: "",
+    status: "active",
     minSalary: "",
     maxSalary: "",
+    currency: "IDR",
+    badge: "Active",
+    started_on_text: "",
+    cta: "Manage Job",
 };
 
-const JobFormValidationSchema = {
+const JobFormValidationSchema = Yup.object().shape({
+    slug: Yup.string().required("Job slug is required"),
     title: Yup.string().required("Job title is required"),
-    type: Yup.string().required("Job type is required"),
-    description: Yup.string().required("Job description is required"),
-    maxCandidates: Yup.string().required("Max candidates is required"),
+    status: Yup.string().required("Job status is required"),
     minSalary: Yup.string().required("Min salary is required"),
     maxSalary: Yup.string().required("Max salary is required"),
-};
+    currency: Yup.string().required("Currency is required"),
+    badge: Yup.string().required("Badge is required"),
+    started_on_text: Yup.string().required("Start date is required"),
+    cta: Yup.string().required("CTA is required"),
+});
 
-const JobForm = () => {
+interface JobFormProps {
+    showJobList?: boolean;
+    jobData?: Job[];
+    onSuccess?: () => void;
+    onError?: (error: string) => void;
+    formikRef?: React.RefObject<any>;
+}
+
+interface Job {
+    id: string;
+    slug: string;
+    title: string;
+    status: string;
+    salary_range: {
+        min: number;
+        max: number;
+        currency: string;
+        display_text: string;
+    };
+    list_card: {
+        badge: string;
+        started_on_text: string;
+        cta: string;
+    };
+}
+
+const JobForm = ({
+    showJobList = false,
+    jobData,
+    onSuccess,
+    onError,
+    formikRef,
+}: JobFormProps) => {
     return (
         <div>
             <Formik
+                innerRef={formikRef}
                 initialValues={JobFormInitialValues}
                 validationSchema={JobFormValidationSchema}
-                onSubmit={(values) => {
-                    setTimeout(() => {
-                        alert("Job Form submitted: " + JSON.stringify(values));
-                    }, 600);
+                onSubmit={async (values, { setSubmitting }) => {
+                    console.log("Form submitted with values:", values);
+                    console.log("Starting job creation...");
+                    try {
+                        // Auto-generate slug from title if slug is empty
+                        const generatedSlug =
+                            values.slug ||
+                            values.title
+                                .toLowerCase()
+                                .replace(/[^a-z0-9]+/g, "-")
+                                .replace(/^-+|-+$/g, "") ||
+                            `job-${Date.now()}`;
+
+                        const newJob = {
+                            id: `job_${new Date()
+                                .toISOString()
+                                .slice(0, 10)
+                                .replace(/-/g, "")}_${Math.random()
+                                .toString(36)
+                                .substr(2, 4)}`,
+                            slug: generatedSlug,
+                            title: values.title,
+                            status: values.status,
+                            salary_range: {
+                                min: parseInt(values.minSalary),
+                                max: parseInt(values.maxSalary),
+                                currency: "IDR",
+                                display_text: `Rp${parseInt(
+                                    values.minSalary
+                                ).toLocaleString("id-ID")} - Rp${parseInt(
+                                    values.maxSalary
+                                ).toLocaleString("id-ID")}`,
+                            },
+                            list_card: {
+                                badge:
+                                    values.status.charAt(0).toUpperCase() +
+                                    values.status.slice(1),
+                                started_on_text: `started on ${new Date().toLocaleDateString(
+                                    "en-US",
+                                    {
+                                        day: "numeric",
+                                        month: "short",
+                                        year: "numeric",
+                                    }
+                                )}`,
+                                cta: values.cta,
+                            },
+                        };
+
+                        console.log("Making API call to /api/jobs");
+                        const response = await axios.post("/api/jobs", {
+                            data: [newJob],
+                        });
+                        console.log("API response received:", response.status);
+
+                        if (
+                            response.status === 200 ||
+                            response.status === 201
+                        ) {
+                            console.log(
+                                "Job created successfully, calling onSuccess"
+                            );
+                            onSuccess?.();
+                        } else {
+                            console.log(
+                                "Unexpected response status:",
+                                response.status
+                            );
+                            onError?.("Failed to create job");
+                        }
+                    } catch (error) {
+                        console.error("Error creating job:", error);
+                        onError?.("Error creating job. Please try again.");
+                    } finally {
+                        setSubmitting(false);
+                    }
                 }}
             >
                 {({ setFieldValue, setFieldTouched }) => (

@@ -44,57 +44,66 @@ const JobListPage = () => {
 
     const handleOpenModal = () => setIsModalOpen(true);
     const handleCloseModal = () => setIsModalOpen(false);
+    const handleJobCreated = () => {
+        fetchJobs(); // Refresh the job list after successful creation
+    };
+
+    const fetchJobs = async () => {
+        try {
+            const response = await axios.get(
+                `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/jobs`,
+                {
+                    params: {
+                        select: "*",
+                        order: "created_at.desc",
+                    },
+                    headers: {
+                        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+                        Authorization: `Bearer ${process.env
+                            .NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+                    },
+                }
+            );
+
+            setJobs(response.data || []);
+        } catch (error) {
+            console.error("REST API Error:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchJobs = async () => {
-            try {
-                const response = await axios.get(
-                    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/jobs`,
-                    {
-                        params: {
-                            select: "*",
-                            order: "created_at.desc",
-                        },
-                        headers: {
-                            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-                            Authorization: `Bearer ${process.env
-                                .NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
-                        },
-                    }
-                );
-
-                setJobs(response.data || []);
-            } catch (error) {
-                console.error("REST API Error:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchJobs();
     }, []);
 
     return (
         <DashboardLayout>
-            <div className="px-8 py-6 font-nunito flex justify-between">
-                <div className="flex flex-col gap-8 w-[82%]">
+            <div className="px-8 py-6 font-nunito flex justify-between gap-8">
+                <div className="flex flex-col gap-8 w-[77%]">
                     <Search
                         value={searchQuery}
                         onChange={(value) => setSearchQuery(value)}
                         placeholder="Search by job details"
                     />
                     {filteredJobs.length > 0 ? (
-                        <div className="grid grid-cols-1 gap-4 rounded-2xl shadow-[0px_4px_8px_0px_rgba(0,0,0,0.1)]">
+                        <div className="grid grid-cols-1 gap-4">
                             {filteredJobs.map((job) => (
-                                <CardJobListAdmin
+                                <div
                                     key={job.id}
-                                    id={job.id}
-                                    startedDate={job.list_card.started_on_text}
-                                    status={job.list_card.badge}
-                                    title={job.title}
-                                    salary={job.salary_range.display_text}
-                                    cta={job.list_card.cta}
-                                />
+                                    className="p-2 rounded-2xl shadow-[0px_4px_8px_0px_rgba(0,0,0,0.1)]"
+                                >
+                                    <CardJobListAdmin
+                                        id={job.id}
+                                        startedDate={
+                                            job.list_card.started_on_text
+                                        }
+                                        status={job.list_card.badge}
+                                        title={job.title}
+                                        salary={job.salary_range.display_text}
+                                        cta={job.list_card.cta}
+                                    />
+                                </div>
                             ))}
                         </div>
                     ) : (
@@ -106,7 +115,11 @@ const JobListPage = () => {
                 </div>
             </div>
             {isModalOpen && (
-                <Modal isOpen={isModalOpen} onClose={handleCloseModal} />
+                <Modal
+                    isOpen={isModalOpen}
+                    onClose={handleCloseModal}
+                    onSuccess={handleJobCreated}
+                />
             )}
         </DashboardLayout>
     );

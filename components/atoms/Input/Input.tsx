@@ -90,8 +90,7 @@ const InputElement = (
                     <div className="relative w-full h-fit">
                         <input
                             name={name}
-                            defaultValue={defaultValue}
-                            value={value}
+                            value={value ?? ""}
                             type={
                                 type === "password" && hidePassword
                                     ? "text"

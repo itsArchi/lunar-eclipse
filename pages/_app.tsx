@@ -3,6 +3,8 @@ import "../styles/global.css";
 import { useEffect } from "react";
 import { useAuthStore } from "../src/store/authStore";
 import { authService } from "../utils/auth/auth";
+import ToastProvider from "../components/atoms/Toast/Toast";
+import "react-toastify/dist/ReactToastify.css";
 
 function MyApp({ Component, pageProps }: AppProps) {
     const checkAuth = useAuthStore((state) => state.checkAuth);
@@ -20,7 +22,12 @@ function MyApp({ Component, pageProps }: AppProps) {
         return () => subscription.unsubscribe();
     }, [checkAuth, setUser]);
 
-    return <Component {...pageProps} />;
+    return (
+        <>
+            <Component {...pageProps} />;
+            <ToastProvider />
+        </>
+    );
 }
 
 export default MyApp;

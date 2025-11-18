@@ -99,8 +99,7 @@ export const InputSelect = ({
                             const itemStyle = clsx({
                                 "bg-bluescale-20 text-brand-primary":
                                     isItemSelected,
-                                "bg-accent-white text-accent-black":
-                                    !isItemSelected,
+                                "bg-white text-neutral-90": !isItemSelected,
                             });
                             return (
                                 <p
