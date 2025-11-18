@@ -1,7 +1,8 @@
 import { toast, ToastContainer, ToastPosition, Theme } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import CircleCheckIcon from "../../../public/assets/icon/CircleCheck";
+import CircleCrossIcon from "../../../public/assets/icon/CircleCross";
 
-// Inject custom styles
 const customStyles = `
     .custom-success-toast {
         background: white !important;
@@ -11,11 +12,11 @@ const customStyles = `
         margin-left: 16px !important;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
         min-height: auto !important;
-        border-left: 4px solid #3b82f6 !important;
+        border-left: 4px solid #01959F !important;
     }
     
     .custom-success-toast .Toastify__toast-body {
-        color: #64748b !important;
+        color: #01959F !important;
         font-size: 14px !important;
         font-weight: 500 !important;
         padding: 0 !important;
@@ -23,7 +24,7 @@ const customStyles = `
     }
     
     .custom-success-toast .Toastify__toast-icon {
-        color: #3b82f6 !important;
+        color: #01959F !important;
         margin-right: 8px !important;
     }
     
@@ -32,6 +33,38 @@ const customStyles = `
     }
     
     .custom-success-toast .Toastify__close-button {
+        display: none !important;
+    }
+    
+    .custom-warning-toast {
+        background: white !important;
+        border-radius: 8px !important;
+        padding: 12px 16px !important;
+        margin-bottom: 16px !important;
+        margin-left: 16px !important;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+        min-height: auto !important;
+        border-left: 4px solid #E01428 !important;
+    }
+    
+    .custom-warning-toast .Toastify__toast-body {
+        color: #E01428 !important;
+        font-size: 14px !important;
+        font-weight: 500 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    .custom-warning-toast .Toastify__toast-icon {
+        color: #E01428 !important;
+        margin-right: 8px !important;
+    }
+    
+    .custom-warning-toast .Toastify__progress-bar {
+        display: none !important;
+    }
+    
+    .custom-warning-toast .Toastify__close-button {
         display: none !important;
     }
 `;
@@ -71,21 +104,7 @@ export const showSuccessToast = (
         draggable: true,
         theme: "light",
         className: "custom-success-toast",
-        icon: (
-            <svg
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                style={{ color: "#3b82f6" }}
-            >
-                <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clipRule="evenodd"
-                />
-            </svg>
-        ),
+        icon: <CircleCheckIcon />,
         ...config,
     });
 };
@@ -134,6 +153,8 @@ export const showWarningToast = (
         pauseOnHover: true,
         draggable: true,
         theme: "light",
+        className: "custom-warning-toast",
+        icon: <CircleCrossIcon />,
         ...config,
     });
 };

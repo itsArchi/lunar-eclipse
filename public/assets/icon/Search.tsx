@@ -2,10 +2,10 @@ const SearchIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
-        viewBox="0 0 24 24"
+        viewBox="0 0 28 28"
         strokeWidth="1.5"
         stroke="currentColor"
-        className="size-6"
+        className="size-6 text-neutral-100"
         {...props}
     >
         <path

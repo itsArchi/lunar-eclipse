@@ -73,8 +73,11 @@ const JobListDetailPage = ({
     if (!job) {
         return (
             <DashboardLayout>
-                <div className="flex items-center justify-center min-h-[calc(91vh-64px)] p-8 border">
-                    <div className="text-center flex flex-col items-center justify-center w-full border min-h-[calc(91vh-64px)]">
+                <div className="flex flex-col justify-center min-h-[calc(75vh-64px)] p-8 font-nunito">
+                    <h3 className="text-16 font-700 text-neutral-100 leading-28 mb-6">
+                        asd
+                    </h3>
+                    <div className="text-center flex flex-col items-center justify-center w-full border min-h-[calc(85vh-64px)]">
                         <Image
                             src={emptyCandidates}
                             width={240}

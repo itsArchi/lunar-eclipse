@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
-// Check environment variables
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -38,6 +37,41 @@ export default async function handler(
     res: NextApiResponse
 ) {
     console.log("API endpoint called with method:", req.method);
+
+    if (req.method !== "GET" && req.method !== "POST") {
+        res.setHeader("Allow", ["GET", "POST"]);
+        return res
+            .status(405)
+            .json({ message: `Method ${req.method} not allowed` });
+    }
+
+    try {
+        if (req.method === "GET") {
+            const { data: jobs, error } = await supabase
+                .from("jobs")
+                .select("*")
+                .order("created_at", { ascending: false });
+
+            if (error) {
+                console.error("Supabase error:", error);
+                return res.status(500).json({ message: "Error fetching jobs" });
+            }
+
+            return res.status(200).json({
+                success: true,
+                data: jobs,
+            });
+        } else if (req.method === "POST") {
+            const { data } = req.body;
+        }
+    } catch (error) {
+        console.error("Error in jobs API:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
+    }
+
     if (req.method !== "POST") {
         res.setHeader("Allow", ["POST"]);
         return res.status(405).json({ message: "Method not allowed" });
@@ -56,7 +90,6 @@ export default async function handler(
         console.log("Supabase client available:", !!supabase);
         console.log("Attempting to save to Supabase...");
 
-        // Save jobs to Supabase
         const { data: savedJobs, error } = await supabase
             .from("jobs")
             .insert(data)

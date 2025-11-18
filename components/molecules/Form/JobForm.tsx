@@ -85,7 +85,6 @@ const JobForm = ({
                     console.log("Form submitted with values:", values);
                     console.log("Starting job creation...");
                     try {
-                        // Auto-generate slug from title if slug is empty
                         const generatedSlug =
                             values.slug ||
                             values.title

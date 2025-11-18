@@ -98,14 +98,11 @@ const Modal = ({
                                 setIsSubmitting(true);
                                 setError(null);
 
-                                // Get the current form values and submit manually
                                 const values = formikRef.current.values;
                                 console.log("Current form values:", values);
 
-                                // Manually trigger the submit logic
                                 const submitHandler = async () => {
                                     try {
-                                        // Always generate slug from name or use timestamp fallback
                                         const generatedSlug =
                                             values.name && values.name.trim()
                                                 ? values.name

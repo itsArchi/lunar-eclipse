@@ -1,8 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Input } from "../../atoms/Input/Input";
-// import { Close } from "/assets/icons/Navigation";
 import clsx from "clsx";
-import KeyboardArrowDown from "../../../public/assets/icon/KeyboardArrowDown";
 export interface InputSelectItemProps {
     id: string;
     label: string;
@@ -69,13 +67,6 @@ export const InputSelect = ({
                     onClick={() => {
                         setOpen(true);
                     }}
-                    // suffixIcon={
-                    //     open ? (
-                    //         <Close className="w-5 h-5 fill-greyscale-60" />
-                    //     ) : (
-                    //         <KeyboardArrowDown className="w-3 h-3 fill-greyscale-60 self-center mt-[3px]" />
-                    //     )
-                    // }
                     onClickSuffixIcon={() => {
                         if (open) {
                             setOpen(false);
@@ -105,8 +96,6 @@ export const InputSelect = ({
                                 <p
                                     key={index}
                                     onClick={() => {
-                                        // onSelectDropdown?.(item);
-
                                         if (!isItemSelected && isMultiple) {
                                             const newItem: InputSelectItemProps =
                                                 {

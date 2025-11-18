@@ -34,8 +34,6 @@ const RegisterPage = () => {
                         validationSchema={LoginSchema}
                         onSubmit={(values, { setSubmitting }) => {
                             setTimeout(() => {
-                                // TODO: replace with real auth call
-                                // e.g., next-auth / supabase auth
                                 alert(
                                     "Login sukses: " + JSON.stringify(values)
                                 );
@@ -82,7 +80,10 @@ const RegisterPage = () => {
                                     </Field>
                                 </div>
 
-                                <Button type="secondary" isDisabled={isSubmitting} >
+                                <Button
+                                    type="secondary"
+                                    isDisabled={isSubmitting}
+                                >
                                     {isSubmitting ? "Memproses..." : "Daftar"}
                                 </Button>
                             </Form>
@@ -92,6 +93,6 @@ const RegisterPage = () => {
             </div>
         </div>
     );
-}
+};
 
-export default RegisterPage
+export default RegisterPage;
