@@ -1,10 +1,9 @@
-// pages/job-list/[id]/index.tsx
 import { useState, useEffect } from "react";
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 import DashboardLayout from "../../../components/templates/DashboardLayout/DashboardLayout";
 import { Button } from "../../../components/atoms/Button/Button";
-import CandidateTable from "../../../components/molecules/Table/CabdidatesTable";
+import CandidateTable from "../../../components/organisms/Table/CabdidatesTable";
 import axios from "axios";
 import Image from "next/image";
 import emptyCandidates from "../../../public/assets/image/backdrop-empty-candidates.svg";
@@ -147,7 +146,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const { id } = context.params as { id: string };
 
     try {
-        // Fetch job details
         const [jobRes, candidatesRes] = await Promise.all([
             axios.get(
                 `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/jobs?id=eq.${id}`,
@@ -159,7 +157,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                     },
                 }
             ),
-            // Fetch candidates for this job
             axios.get(
                 `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/candidates?job_id=eq.${id}&select=*`,
                 {
@@ -192,7 +189,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             };
         }
 
-        // Transform the candidates data to match our table structure
         const formattedCandidates = (candidatesRes.data || []).map(
             (candidate: any) => {
                 console.log("Processing candidate:", candidate);

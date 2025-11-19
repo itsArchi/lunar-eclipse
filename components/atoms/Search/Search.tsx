@@ -4,7 +4,7 @@ const Search = ({
     onChange,
     value,
     className,
-    placeholder
+    placeholder,
 }: {
     onChange: (value: string) => void;
     value: string;

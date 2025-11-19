@@ -1,4 +1,5 @@
 import type { AppProps } from "next/app";
+import "antd/dist/reset.css";
 import "../styles/global.css";
 import { useEffect } from "react";
 import { useAuthStore } from "../src/store/authStore";

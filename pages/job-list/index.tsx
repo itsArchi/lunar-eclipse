@@ -1,4 +1,3 @@
-// pages/job-list/index.tsx
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useRouter } from "next/router";
@@ -7,6 +6,7 @@ import Search from "../../components/atoms/Search/Search";
 import { Button } from "../../components/atoms/Button/Button";
 import CardJobListApplicant from "../../components/molecules/CardJobListApplicant.tsx";
 import { LogoIcon } from "../../components/atoms/LogoIcon/LogoIcon";
+import Image from "next/image";
 
 interface Job {
     id: string;
@@ -62,20 +62,20 @@ const JobListPage = () => {
             <div className="px-12 py-6 font-nunito">
                 <div className="flex flex-col gap-8 w-full">
                     <div className="flex justify-between items-center">
-                        <h1 className="text-2xl font-bold text-neutral-100">
+                        <h1 className="text-2xl font-bold text-neutral-100 w-[10%]">
                             Job Listings
                         </h1>
                         <Search
                             value={searchQuery}
                             onChange={setSearchQuery}
                             placeholder="Search jobs, companies, or locations"
-                            className="w-96"
+                            className="w-full "
                         />
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="flex justify-between gap-6">
                         {/* Job List Sidebar */}
-                        <div className="space-y-4">
+                        <div className="space-y-4 w-[20%]">
                             {filteredJobs.map((job) => (
                                 <CardJobListApplicant
                                     key={job.id}
@@ -92,86 +92,56 @@ const JobListPage = () => {
 
                         {/* Job Details Panel */}
                         {filteredJobs.length > 0 && (
-                            <div className="md:col-span-2 bg-white rounded-lg shadow-sm p-6">
-                                <div className="flex justify-between items-start mb-6">
+                            <div className="w-[80%] bg-white rounded-lg shadow-sm p-6 border border-neutral-40">
+                                <div className="flex justify-between items-start pb-6 border-b border-neutral-40">
                                     <div className="flex items-start gap-4">
-                                        <div className="w-16 h-16 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center">
+                                        <div className="w-16 h-16 flex-shrink-0 pl-3 bg-neutral-10 border rounded-lg flex items-center justify-center">
                                             {filteredJobs[0].logo_url ? (
-                                                <img
+                                                <Image
                                                     src={
                                                         filteredJobs[0].logo_url
                                                     }
                                                     alt={
                                                         filteredJobs[0].company
                                                     }
-                                                    className="w-12 h-12 object-contain"
+                                                    className="w-12 h-12"
                                                 />
                                             ) : (
-                                                <LogoIcon size="lg" />
+                                                <LogoIcon size="md" />
                                             )}
                                         </div>
                                         <div>
-                                            <span className="inline-block bg-primary-surface text-primary-main text-xs font-bold px-2 py-1 rounded-md mb-2">
-                                                {filteredJobs[0].type}
+                                            <span className="inline-block bg-primary-main text-neutral-10 text-12 font-700 leading-20 px-2 py-1 rounded mb-2">
+                                                {/* {filteredJobs[0].type} */}
+                                                Full-time
                                             </span>
-                                            <h2 className="text-2xl font-bold text-neutral-100">
+                                            <h2 className="text-18 font-700 leading-28 text-neutral-90">
                                                 {filteredJobs[0].title}
                                             </h2>
-                                            <p className="text-neutral-90 mt-1">
-                                                {filteredJobs[0].company} •{" "}
-                                                {filteredJobs[0].location}
+                                            <p className="text-neutral-70 text-14 font-400 leading-24">
+                                                {/* {filteredJobs[0].company} */}
+                                                Company Name
                                             </p>
                                         </div>
                                     </div>
                                     <Button
-                                        type="primary"
+                                        type="secondary"
                                         onClick={() =>
                                             router.push(
                                                 `/job-list/${filteredJobs[0].id}/apply`
                                             )
                                         }
+                                        className="text-14 font-bold leading-24 text-neutral-90"
                                     >
-                                        Apply Now
+                                        Apply
                                     </Button>
                                 </div>
 
-                                <div className="space-y-6">
+                                <div className="space-y-6 mt-8 px-4">
                                     <div>
-                                        <h3 className="text-lg font-semibold text-neutral-100 mb-3">
-                                            Job Description
-                                        </h3>
-                                        <p className="text-neutral-90">
-                                            {/* Add job description here or fetch from API */}
+                                        <p className="text-14 font-400 leading-24 text-neutral-90">
                                             We are looking for a skilled [Job
                                             Title] to join our team...
-                                        </p>
-                                    </div>
-
-                                    <div>
-                                        <h3 className="text-lg font-semibold text-neutral-100 mb-3">
-                                            Requirements
-                                        </h3>
-                                        <ul className="list-disc pl-5 space-y-2 text-neutral-90">
-                                            <li>
-                                                3+ years of experience in
-                                                [relevant field]
-                                            </li>
-                                            <li>
-                                                Strong knowledge of [specific
-                                                skills]
-                                            </li>
-                                            <li>
-                                                Excellent communication skills
-                                            </li>
-                                        </ul>
-                                    </div>
-
-                                    <div>
-                                        <h3 className="text-lg font-semibold text-neutral-100 mb-3">
-                                            Salary
-                                        </h3>
-                                        <p className="text-neutral-90">
-                                            {filteredJobs[0].salary}
                                         </p>
                                     </div>
                                 </div>

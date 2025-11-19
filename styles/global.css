@@ -3,3 +3,19 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.custom-datepicker .ant-picker {
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.12);
+}
+
+.custom-datepicker .ant-picker-input > input {
+    font-size: 14px;
+}
+
+.ant-picker-dropdown {
+    border-radius: 12px !important;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08) !important;
+}
