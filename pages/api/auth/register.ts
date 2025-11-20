@@ -1,60 +1,54 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import { createClient } from "@supabase/supabase-js";
-import { hash } from "bcryptjs";
+import type { NextApiRequest, NextApiResponse } from "next";
 
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+type Data = any;
 
 export default async function handler(
     req: NextApiRequest,
-    res: NextApiResponse
+    res: NextApiResponse<Data>
 ) {
     if (req.method !== "POST") {
         return res.status(405).json({ error: "Method not allowed" });
     }
 
+    const { name, email, password } = req.body;
+    if (!name || !email || !password) {
+        return res.status(400).json({ error: "Missing name/email/password" });
+    }
+
+    const SUPABASE_BASE = "https://abamuktjmrrbqhudpide.supabase.co";
+    const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+
+    if (!SUPABASE_ANON_KEY) {
+        return res
+            .status(500)
+            .json({ error: "Supabase anon key not configured on server" });
+    }
+
     try {
-        const { name, email, password } = req.body;
-
-        const { data: existingUser } = await supabase
-            .from("users")
-            .select("id")
-            .eq("email", email)
-            .single();
-
-        if (existingUser) {
-            return res.status(400).json({ error: "Email already registered" });
-        }
-
-        const hashedPassword = await hash(password, 12);
-
-        const { data: newUser, error: createError } = await supabase
-            .from("users")
-            .insert([
-                {
-                    email,
+        const r = await fetch(`${SUPABASE_BASE}/auth/v1/signup`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                apikey: SUPABASE_ANON_KEY,
+                Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+            },
+            body: JSON.stringify({
+                email,
+                password,
+                data: {
                     name,
-                    password: hashedPassword,
-                    role: "user",
-                    created_at: new Date().toISOString(),
+                    role: email.endsWith("@admin.com") ? "admin" : "applicant",
                 },
-            ])
-            .select()
-            .single();
-
-        if (createError) {
-            throw createError;
-        }
-
-        const { password: _, ...userWithoutPassword } = newUser;
-        return res.status(201).json(userWithoutPassword);
-    } catch (error) {
-        console.error("Registration error:", error);
-        return res.status(500).json({
-            error:
-                error instanceof Error ? error.message : "Registration failed",
+                options: {
+                    // emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`
+                },
+            }),
         });
+
+        const data = await r.json();
+        return res.status(r.status).json(data);
+    } catch (err) {
+        console.error("Error calling supabase signup:", err);
+        return res.status(500).json({ error: "Internal server error" });
     }
 }

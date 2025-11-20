@@ -39,26 +39,25 @@ const CandidateSchema = yup.object().shape({
         .required("LinkedIn URL is required"),
     domicile: yup.string().required("Domicile is required"),
     religion: yup.string().required("Religion is required"),
-    salary: yup.string().required("Expetation Salary is required"),
+    salary: yup.string().required("Expectation Salary is required"),
 });
 
 interface CandidateFormProps {
     jobId?: string;
+    onSuccess?: (result?: any) => void;
+    onSubmit: (values: FormValues) => void;
 }
 
-const CandidateForm: React.FC<CandidateFormProps> = ({ jobId }) => {
+const CandidateForm: React.FC<CandidateFormProps> = ({
+    jobId,
+    onSuccess,
+    onSubmit,
+}) => {
     const [items, setItems] = useState<{ id: string; label: string }[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [selectedDomicile, setSelectedDomicile] = useState("");
     const formik = useFormikContext<FormValues>();
-
-    const handleDomicileSelect = (item: { id: string; label: string }) => {
-        setSelectedDomicile(item.label);
-        formik.setFieldValue("domicile", item.id);
-        setSearchTerm("");
-        setIsDropdownOpen(false);
-    };
 
     useEffect(() => {
         let mounted = true;
@@ -76,35 +75,14 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ jobId }) => {
         };
     }, []);
 
-    const handleSubmit = async (values: FormValues, { setSubmitting }: any) => {
-        try {
-            const response = await fetch("/api/applicants", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    ...values,
-                    job_id: jobId,
-                    status: "applied",
-                    applied_at: new Date().toISOString(),
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to submit application");
-            }
-
-            const result = await response.json();
-            alert("Application submitted successfully!");
-            // Optionally reset the form
-            // formik.resetForm();
-        } catch (error) {
-            console.error("Error submitting application:", error);
-            alert("Failed to submit application. Please try again.");
-        } finally {
-            setSubmitting(false);
-        }
+    const handleDomicileSelect = (
+        item: { id: string; label: string },
+        setFieldValue?: any
+    ) => {
+        setSelectedDomicile(item.label);
+        if (setFieldValue) setFieldValue("domicile", item.id);
+        setSearchTerm("");
+        setIsDropdownOpen(false);
     };
 
     return (
@@ -122,9 +100,12 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ jobId }) => {
                     salary: "",
                 }}
                 validationSchema={CandidateSchema}
-                onSubmit={handleSubmit}
+                onSubmit={(values, { setSubmitting }) => {
+                    onSubmit(values);
+                    setSubmitting(false);
+                }}
             >
-                {({ isSubmitting }) => (
+                {({ isSubmitting, setFieldValue }) => (
                     <Form className="flex flex-col gap-4 max-w-[696px] mb-8 w-full space-y-4 font-nunito">
                         <div className="space-y-4">
                             <Field name="name">
@@ -163,16 +144,6 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ jobId }) => {
 
                             <Field name="domicile">
                                 {({ field, meta, form }: FieldProps) => {
-                                    const handleDomicileSelect = (item: {
-                                        id: string;
-                                        label: string;
-                                    }) => {
-                                        setSelectedDomicile(item.label);
-                                        form.setFieldValue("domicile", item.id);
-                                        setSearchTerm("");
-                                        setIsDropdownOpen(false);
-                                    };
-
                                     return (
                                         <div className="relative">
                                             <label className="block text-12 font-400 text-neutral-90 mb-1">
@@ -233,7 +204,8 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ jobId }) => {
                                                                     }`}
                                                                     onMouseDown={() =>
                                                                         handleDomicileSelect(
-                                                                            item
+                                                                            item,
+                                                                            setFieldValue
                                                                         )
                                                                     }
                                                                 >
@@ -340,8 +312,8 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ jobId }) => {
                                     <div>
                                         <Input
                                             {...field}
-                                            label="Expetation Salary"
-                                            placeholder="Enter your expetation"
+                                            label="Expectation Salary"
+                                            placeholder="Enter your expectation"
                                             required
                                         />
                                         {meta.touched && meta.error ? (
@@ -354,9 +326,13 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ jobId }) => {
                             </Field>
                         </div>
 
-                        <Button type="primary" isDisabled={isSubmitting}>
+                        <button
+                            type="submit"
+                            className="bg-primary-main text-white px-4 py-2 rounded disabled:opacity-50"
+                            disabled={isSubmitting}
+                        >
                             {isSubmitting ? "Memproses..." : "Submit"}
-                        </Button>
+                        </button>
                     </Form>
                 )}
             </Formik>

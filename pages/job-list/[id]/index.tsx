@@ -74,20 +74,27 @@ const JobListDetailPage = ({
 
     const fetchJobApplicants = async (jobId: string) => {
         try {
-            const response = await fetch(`/api/jobs?jobId=${jobId}`);
-            const payload = await response.json();
+            const resp = await fetch(
+                `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/applicants?job_id=eq.${jobId}&order=applied_at.desc`,
+                {
+                    headers: {
+                        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+                        Authorization: `Bearer ${process.env
+                            .NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+                    },
+                }
+            );
 
-            if (!payload.success || !Array.isArray(payload.data)) {
-                console.warn("Unexpected payload from /api/jobs", payload);
+            if (!resp.ok) {
+                console.warn("Fetch applicants rest error", resp.status);
                 return;
             }
 
-            const formattedCandidates: Candidate[] = payload.data.map(
-                (raw: any) => normalizeCandidate(raw)
+            const raw = await resp.json();
+            const formattedCandidates: Candidate[] = raw.map((r: any) =>
+                normalizeCandidate(r)
             );
-
             setCandidates(formattedCandidates);
-            console.log("Formatted candidates:", formattedCandidates);
         } catch (error) {
             console.error("Error fetching applicants:", error);
         }
@@ -104,8 +111,6 @@ const JobListDetailPage = ({
 
         return () => {};
     }, [router.query.id]);
-
-    console.log("Initial props received:", { job, initialCandidates });
 
     const handleSelectCandidate = (candidateId: string, selected: boolean) => {
         setSelectedCandidates((prev) =>
@@ -210,7 +215,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         );
 
         const candPromise = axios.get(
-            `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/candidates?job_id=eq.${id}`,
+            `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/applicants?job_id=eq.${id}`,
             {
                 headers: {
                     apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -229,7 +234,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         if (jobRes.status === "fulfilled") {
             const data = jobRes.value?.data;
             job = Array.isArray(data) && data.length > 0 ? data[0] : null;
-            console.log("SSR: job found?", !!job);
         } else {
             console.warn(
                 "SSR: job fetch failed:",
@@ -246,10 +250,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         let normalizedCandidates: any[] = [];
         if (candidatesRes.status === "fulfilled") {
             const raw = candidatesRes.value?.data || [];
-            console.log(
-                "SSR: candidates fetched (count):",
-                Array.isArray(raw) ? raw.length : typeof raw
-            );
             normalizedCandidates = (Array.isArray(raw) ? raw : []).map(
                 (c: any) => normalizeRaw(c)
             );

@@ -82,8 +82,6 @@ const JobForm = ({
                 initialValues={JobFormInitialValues}
                 validationSchema={JobFormValidationSchema}
                 onSubmit={async (values, { setSubmitting }) => {
-                    console.log("Form submitted with values:", values);
-                    console.log("Starting job creation...");
                     try {
                         const generatedSlug =
                             values.slug ||
@@ -129,25 +127,16 @@ const JobForm = ({
                             },
                         };
 
-                        console.log("Making API call to /api/jobs");
                         const response = await axios.post("/api/jobs", {
                             data: [newJob],
                         });
-                        console.log("API response received:", response.status);
 
                         if (
                             response.status === 200 ||
                             response.status === 201
                         ) {
-                            console.log(
-                                "Job created successfully, calling onSuccess"
-                            );
                             onSuccess?.();
                         } else {
-                            console.log(
-                                "Unexpected response status:",
-                                response.status
-                            );
                             onError?.("Failed to create job");
                         }
                     } catch (error) {

@@ -6,8 +6,13 @@ import { Input } from "../components/atoms/Input/Input";
 import { Button } from "../components/atoms/Button/Button";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { signIn } from "next-auth/react";
 import Link from "next/link";
+import { useAuthStore } from "@/store/authStore";
+
+import {
+    showSuccessToast,
+    showErrorToast,
+} from "../components/atoms/Toast/Toast";
 
 const RegisterSchema = yup.object().shape({
     name: yup.string().required("Nama lengkap wajib diisi"),
@@ -29,6 +34,7 @@ const RegisterPage = () => {
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const { register } = useAuthStore();
 
     const handleSubmit = async (values: {
         name: string;
@@ -39,41 +45,26 @@ const RegisterPage = () => {
             setIsSubmitting(true);
             setError(null);
 
-            const response = await fetch("/api/auth/register", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    name: values.name,
-                    email: values.email,
-                    password: values.password,
-                }),
-            });
+            const { success, error, requiresConfirmation, message } =
+                await register(values.email, values.password, values.name);
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || "Registration failed");
+            if (!success) {
+                showErrorToast(error || "Registration failed");
+                setError(error || "Registration failed");
+                setIsSubmitting(false);
+                return;
             }
 
-            const signInResult = await signIn("credentials", {
-                redirect: false,
-                email: values.email,
-                password: values.password,
-                callbackUrl: "/job-list",
-            });
-
-            if (signInResult?.error) {
-                router.push("/login?registered=true");
-            } else {
-                router.push(signInResult?.url || "/job-list");
-            }
+            const toastMessage =
+                message || "Registrasi berhasil. Silakan login.";
+            showSuccessToast(toastMessage);
+            router.push("/login?registered=true");
         } catch (err) {
             console.error("Registration error:", err);
-            setError(
-                err instanceof Error ? err.message : "Registration failed"
-            );
+            const msg =
+                err instanceof Error ? err.message : "Registration failed";
+            showErrorToast(msg);
+            setError(msg);
         } finally {
             setIsSubmitting(false);
         }
@@ -85,6 +76,7 @@ const RegisterPage = () => {
                 <div className="flex justify-start w-full">
                     <Logo />
                 </div>
+
                 <div className="w-full md:w-[420px] bg-neutral-10 shadow-lg rounded-md p-8 gap-4">
                     <h2 className="font-700 text-20 leading-[30px] text-neutral-100 mb-6">
                         Daftar ke App
@@ -106,13 +98,11 @@ const RegisterPage = () => {
                         validationSchema={RegisterSchema}
                         onSubmit={handleSubmit}
                     >
-                        {({
-                            errors,
-                            touched,
-                            handleSubmit,
-                            isSubmitting: formikIsSubmitting,
-                        }) => (
-                            <Form className="flex flex-col gap-4 w-full">
+                        {({ isSubmitting: formikIsSubmitting }) => (
+                            <Form
+                                className="flex flex-col gap-4 w-full"
+                                id="register-form"
+                            >
                                 <div className="space-y-4">
                                     <Field name="name">
                                         {({ field, meta }: FieldProps) => (

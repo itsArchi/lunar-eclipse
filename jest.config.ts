@@ -5,19 +5,20 @@ const createJestConfig = nextJest({
     dir: "./",
 });
 
-const customJestConfig: Config = {
+const customJestConfig = {
+    testEnvironment: "jsdom",
     setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
-    testEnvironment: "jest-environment-jsdom",
     moduleNameMapper: {
-        "^@/components/(.*)$": "<rootDir>/components/$1",
-        "^@/pages/(.*)$": "<rootDir>/pages/$1",
-        "^@/utils/(.*)$": "<rootDir>/utils/$1",
+        "^@/(.*)$": "<rootDir>/$1",
     },
     testMatch: [
         "**/__tests__/**/*.test.[jt]s?(x)",
-        "**/?(*.)+(spec|test).[jt]s?(x)",
-        "!**/pages/**/*.test.[jt]s?(x)",
+        "**/src/**/*.test.[jt]s?(x)",
     ],
+    testPathIgnorePatterns: ["<rootDir>/.next/", "<rootDir>/node_modules/"],
+    transform: {
+        "^.+\\.(js|jsx|ts|tsx)$": ["babel-jest", { presets: ["next/babel"] }],
+    },
     collectCoverage: true,
     collectCoverageFrom: [
         "**/*.{js,jsx,ts,tsx}",
@@ -38,4 +39,4 @@ const customJestConfig: Config = {
     },
 };
 
-module.exports = createJestConfig(customJestConfig);
+module.exports = customJestConfig;

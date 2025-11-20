@@ -73,13 +73,18 @@ const JobListAdminLayout = () => {
 
     return (
         <DashboardLayout>
-            <div className="px-8 py-6 font-nunito flex justify-between gap-8">
-                <div className="flex flex-col gap-8 w-full">
+            <div className="px-8 py-6 font-nunito flex flex-col lg:flex-row justify-between gap-8">
+                <div className="flex flex-col gap-8 w-full lg:w-[75%]">
                     <Search
                         value={searchQuery}
                         onChange={(value) => setSearchQuery(value)}
                         placeholder="Search by job details"
                     />
+
+                    <div className="lg:hidden">
+                        <CardAsideJob />
+                    </div>
+
                     {filteredJobs.length > 0 ? (
                         <div className="grid grid-cols-1 gap-4">
                             {filteredJobs.map((job) => (
@@ -104,10 +109,12 @@ const JobListAdminLayout = () => {
                         <EmptyJob onClick={handleOpenModal} />
                     )}
                 </div>
-                <div className="w-[25%]">
+
+                <div className="hidden lg:block lg:w-[25%]">
                     <CardAsideJob />
                 </div>
             </div>
+
             {isModalOpen && (
                 <Modal
                     isOpen={isModalOpen}

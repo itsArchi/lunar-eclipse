@@ -1,6 +1,6 @@
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/router";
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/authStore";
 
 type UserRole = "admin" | "applicant";
 
@@ -11,36 +11,32 @@ export default function ProtectedRoute({
     children: React.ReactNode;
     requiredRole?: UserRole;
 }) {
-    const { data: session, status } = useSession();
     const router = useRouter();
+    const { user, isAuthenticated, isLoading, checkAuth } = useAuthStore();
 
     useEffect(() => {
-        if (status === "unauthenticated") {
+        checkAuth();
+    }, []);
+
+    useEffect(() => {
+        if (!isLoading && !isAuthenticated) {
             router.push("/login");
             return;
         }
 
-        if (status === "authenticated" && requiredRole) {
-            const userRole = session.user?.role as UserRole;
-            if (userRole !== requiredRole) {
-                router.push("/unauthorized");
-            }
+        if (
+            !isLoading &&
+            isAuthenticated &&
+            requiredRole &&
+            user?.role !== requiredRole
+        ) {
+            router.push("/unauthorized");
         }
-    }, [session, status, router, requiredRole]);
+    }, [isAuthenticated, isLoading, router, requiredRole, user?.role]);
 
-    if (status === "loading") {
-        return <div>Loading...</div>;
-    }
-
-    if (!session) {
-        return null;
-    }
-
-    const userRole = session.user?.role as UserRole;
-
-    if (requiredRole && userRole !== requiredRole) {
+    if (isLoading) return <div>Loading...</div>;
+    if (!isAuthenticated) return null;
+    if (requiredRole && user?.role !== requiredRole)
         return <div>Unauthorized</div>;
-    }
-
     return <>{children}</>;
 }

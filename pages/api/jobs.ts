@@ -3,10 +3,6 @@ import { NextApiRequest, NextApiResponse } from "next";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-console.log("Environment check:");
-console.log("SUPABASE_URL:", supabaseUrl ? "defined" : "undefined");
-console.log("SUPABASE_KEY:", supabaseKey ? "defined" : "undefined");
-
 if (!supabaseUrl || !supabaseKey) {
     console.error("Missing Supabase environment variables");
 }
@@ -50,9 +46,6 @@ export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ) {
-    console.log("API endpoint called with method:", req.method);
-    console.log("Request query:", req.query);
-
     if (req.method !== "GET" && req.method !== "POST") {
         res.setHeader("Allow", ["GET", "POST"]);
         return res
@@ -118,17 +111,11 @@ export default async function handler(
     }
 
     try {
-        console.log("API: Request body:", req.body);
         const { data } = req.body;
 
         if (!data || !Array.isArray(data)) {
-            console.log("API: Invalid data format");
             return res.status(400).json({ message: "Invalid data format" });
         }
-
-        console.log("Creating jobs:", data);
-        console.log("Supabase client available:", !!supabase);
-        console.log("Attempting to save to Supabase...");
 
         const { data: savedJobs, error } = await supabase
             .from("jobs")
@@ -142,8 +129,6 @@ export default async function handler(
                 error: error.message,
             });
         }
-
-        console.log("Jobs saved to Supabase:", savedJobs);
 
         return res.status(201).json({
             message: "Jobs created successfully",

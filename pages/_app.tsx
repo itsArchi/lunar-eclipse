@@ -1,32 +1,24 @@
-import { AuthProvider } from "../context/AuthContext";
-import { SessionProvider } from "next-auth/react";
 import type { AppProps } from "next/app";
 import "antd/dist/reset.css";
 import "../styles/global.css";
 import { ToastProvider } from "../components/atoms/Toast/Toast";
-import { useAuthStore } from "../src/store/authStore";
+import { AuthProvider } from "../context/AuthContext";
 import { useEffect } from "react";
+import { useAuthStore } from "@/store/authStore";
 import "react-toastify/dist/ReactToastify.css";
-import { Session } from "next-auth";
 
-function MyApp({
-    Component,
-    pageProps: { session, ...pageProps },
-}: AppProps<{ session: Session }>) {
+function MyApp({ Component, pageProps }: AppProps) {
     const checkAuth = useAuthStore((state) => state.checkAuth);
-    const setUser = useAuthStore((state) => state.setUser);
 
     useEffect(() => {
         checkAuth();
-    }, [checkAuth, setUser]);
+    }, [checkAuth]);
 
     return (
-        <SessionProvider session={session}>
-            <AuthProvider>
-                <Component {...pageProps} />
-            </AuthProvider>
+        <AuthProvider>
+            <Component {...pageProps} />
             <ToastProvider />
-        </SessionProvider>
+        </AuthProvider>
     );
 }
 

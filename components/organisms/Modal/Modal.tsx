@@ -88,18 +88,11 @@ const Modal = ({
                     )}
                     <Button
                         onClick={() => {
-                            console.log("Publish button clicked");
-                            console.log(
-                                "formikRef.current:",
-                                formikRef.current
-                            );
                             if (formikRef.current && formikRef.current.values) {
-                                console.log("Calling submit directly");
                                 setIsSubmitting(true);
                                 setError(null);
 
                                 const values = formikRef.current.values;
-                                console.log("Current form values:", values);
 
                                 const submitHandler = async () => {
                                     try {
@@ -154,37 +147,23 @@ const Modal = ({
                                             },
                                         };
 
-                                        console.log(
-                                            "Making API call to /api/jobs"
-                                        );
                                         const response = await axios.post(
                                             "/api/jobs",
                                             {
                                                 data: [newJob],
                                             }
                                         );
-                                        console.log(
-                                            "API response received:",
-                                            response.status
-                                        );
 
                                         if (
                                             response.status === 200 ||
                                             response.status === 201
                                         ) {
-                                            console.log(
-                                                "Job created successfully, calling onSuccess"
-                                            );
                                             onSuccess?.();
                                             showSuccessToast(
                                                 "Job created successfully!"
                                             );
                                             onClose();
                                         } else {
-                                            console.log(
-                                                "Unexpected response status:",
-                                                response.status
-                                            );
                                             setError("Failed to create job");
                                         }
                                     } catch (error) {
@@ -202,9 +181,6 @@ const Modal = ({
 
                                 submitHandler();
                             } else {
-                                console.log(
-                                    "formikRef.current or submitForm not available"
-                                );
                             }
                         }}
                         type="primary"

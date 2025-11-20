@@ -22,7 +22,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [isLoading, setIsLoading] = useState(true);
 
     const login = async (email: string, password: string) => {
-        // Simple demo login - replace with your actual login logic
         if (email === "demo@example.com" && password === "password") {
             const demoUser = {
                 id: "demo-user-123",

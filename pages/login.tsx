@@ -7,7 +7,7 @@ import { Button } from "../components/atoms/Button/Button";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
-import { signIn } from "next-auth/react";
+import { useAuthStore } from "@/store/authStore";
 
 const LoginSchema = yup.object().shape({
     email: yup
@@ -23,6 +23,7 @@ const LoginSchema = yup.object().shape({
 const LoginPage = () => {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
+    const { login } = useAuthStore();
     const [message, setMessage] = useState<{
         text: string;
         type: "success" | "error";
@@ -37,19 +38,17 @@ const LoginPage = () => {
             setIsLoading(true);
             setError("");
 
-            const result = await signIn("credentials", {
-                redirect: false,
-                email: values.email,
-                password: values.password,
-                callbackUrl: "/job-list",
-            });
+            const { success, error } = await login(
+                values.email,
+                values.password
+            );
 
-            if (result?.error) {
-                setError("Invalid email or password");
-            } else {
+            if (success) {
                 router.push("/job-list");
+            } else {
+                setError(error || "Invalid email or password");
             }
-        } catch (error) {
+        } catch (err) {
             setError("An error occurred during login");
         } finally {
             setIsLoading(false);
@@ -62,6 +61,7 @@ const LoginPage = () => {
                 <div className="flex justify-start w-full">
                     <Logo />
                 </div>
+
                 <div className="w-full md:w-[420px] bg-neutral-10 shadow-lg rounded-md p-8 gap-4">
                     <h2 className="font-700 text-20 leading-[30px] text-neutral-100 mb-6">
                         Masuk ke Rakamin
@@ -148,6 +148,11 @@ const LoginPage = () => {
                                         ? "Memproses..."
                                         : "Masuk"}
                                 </Button>
+                                {error && (
+                                    <p className="text-red-500 text-sm mt-3">
+                                        {error}
+                                    </p>
+                                )}
                             </Form>
                         )}
                     </Formik>

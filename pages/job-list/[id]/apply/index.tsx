@@ -7,6 +7,13 @@ import ModalSimple from "../../../../components/organisms/ModalPicture/ModalPict
 import dynamic from "next/dynamic";
 import { useState } from "react";
 import Image from "next/image";
+import {
+    showErrorToast,
+    showSuccessToast,
+} from "../../../../components/atoms/Toast/Toast";
+import { useRouter } from "next/router";
+import { v4 as uuidv4 } from "uuid";
+import { supabase } from "../../../../utils/supabase/supabase";
 // import type { PoseCaptureProps } from "../../../components/organisms/PoseCapture/PoseCapture";
 
 const PoseCapture = dynamic(
@@ -17,8 +24,12 @@ const PoseCapture = dynamic(
 );
 
 const JobApplyPage = () => {
+    const router = useRouter();
+    const { id: jobIdFromQuery, jobId: jobIdAlt } = router.query as any;
+    const jobId = jobIdFromQuery ?? jobIdAlt ?? router.query.id ?? undefined;
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
+    const [submitting, setSubmitting] = useState(false);
 
     const handleOpenModal = () => setIsModalOpen(true);
     const handleCloseModal = () => setIsModalOpen(false);
@@ -28,8 +39,68 @@ const JobApplyPage = () => {
         setIsModalOpen(false);
     };
 
+    const handleSubmitApplication = async (
+        candidatePayload: Record<string, any>
+    ) => {
+        if (!jobId) {
+            showErrorToast(
+                "Job ID tidak ditemukan. Coba ulangi dari halaman job yang benar."
+            );
+            return;
+        }
+
+        setSubmitting(true);
+        try {
+            const {
+                data: { user },
+                error: userErr,
+            } = await supabase.auth.getUser();
+
+            if (userErr || !user) {
+                showErrorToast(
+                    "Anda harus login terlebih dahulu untuk mengajukan lamaran."
+                );
+                setSubmitting(false);
+                return;
+            }
+
+            const applicantId = `cand_${uuidv4()}`;
+
+            const metadata = {
+                applicant_id: user.id,
+                applicant_email: user.email,
+                form: candidatePayload,
+                photo: photoDataUrl ?? null,
+            };
+
+            const { data, error: insertErr } = await supabase
+                .from("applicants")
+                .insert({
+                    id: applicantId,
+                    job_id: String(jobId),
+                    metadata,
+                    applied_at: new Date().toISOString(),
+                });
+
+            if (insertErr) {
+                console.error("Insert applicants error:", insertErr);
+                showErrorToast(insertErr.message || "Gagal menyimpan lamaran");
+                setSubmitting(false);
+                return;
+            }
+
+            showSuccessToast("Lamaran berhasil dikirim. Terima kasih!");
+            router.push("/job-list");
+        } catch (err) {
+            console.error("Apply error:", err);
+            showErrorToast("Terjadi kesalahan saat mengirim lamaran.");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
     return (
-        <DashboardLayout className="min-h-[97vh] bg-neutral-20 font-nunito">
+        <DashboardLayout className="min-h-[95vh] bg-neutral-20 font-nunito">
             <div className="flex items-center  justify-center font-nunito">
                 <div className="border p-10 bg-neutral-10 border-neutral-40 flex flex-col w-[60%]">
                     <div className="flex items-center justify-between gap-4 w-full">
@@ -90,7 +161,10 @@ const JobApplyPage = () => {
                             </div>
                         </div>
 
-                        <CandidateForm />
+                        <CandidateForm
+                            jobId={jobId}
+                            onSubmit={handleSubmitApplication}
+                        />
                     </div>
                 </div>
             </div>

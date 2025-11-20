@@ -43,7 +43,6 @@ const JobListPage = () => {
         const fetchJobs = async () => {
             try {
                 const response = await axios.get("/api/jobs");
-                console.log("Jobs data:", response.data);
                 setJobs(response.data.data || []);
             } catch (error) {
                 console.error("Error fetching jobs:", error);
@@ -58,7 +57,6 @@ const JobListPage = () => {
     const filteredJobs = jobs.filter(
         (job) =>
             job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            // job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
             job.location.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
@@ -175,7 +173,7 @@ const JobListPage = () => {
                                                         type="secondary"
                                                         onClick={() =>
                                                             router.push(
-                                                                `/job-list/${filteredJobs[0].id}/apply`
+                                                                `/job-list/${activeJob.id}/apply`
                                                             )
                                                         }
                                                         className="text-14 font-bold leading-24 text-neutral-90"

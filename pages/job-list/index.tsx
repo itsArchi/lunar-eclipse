@@ -1,40 +1,44 @@
 import { useEffect, useMemo } from "react";
 import { useRouter } from "next/router";
-import { useSession } from "next-auth/react";
+import { useAuthStore } from "@/store/authStore";
 import JobListApplicantLayout from "../../components/templates/JobListApplicantLayout/JobListApplicantLayout";
 import JobListAdminLayout from "../../components/templates/JobListAdminLayout/JobListAdminLayout";
-import ProtectedRoute from "../api/auth/ProtectedRoute";
 
 type UserRole = "admin" | "applicant";
 
 const JobListPage = () => {
-    const { data: session, status } = useSession();
     const router = useRouter();
 
-    const { userRole, isLoading } = useMemo(() => {
-        if (status === "loading") {
-            return { userRole: undefined, isLoading: true };
+    const { user, isAuthenticated, isLoading } = useAuthStore((s) => ({
+        user: s.user,
+        isAuthenticated: s.isAuthenticated,
+        isLoading: s.isLoading,
+    }));
+
+    const { userRole, loading } = useMemo(() => {
+        if (isLoading) {
+            return { userRole: undefined, loading: true };
         }
 
-        if (status === "unauthenticated") {
-            return { userRole: undefined, isLoading: false };
+        if (!isAuthenticated) {
+            return { userRole: undefined, loading: false };
         }
 
-        const role = session?.user?.role as UserRole | undefined;
+        const role = user?.role as UserRole | undefined;
         return {
             userRole:
                 role === "admin" || role === "applicant" ? role : undefined,
-            isLoading: false,
+            loading: false,
         };
-    }, [status, session]);
+    }, [isLoading, isAuthenticated, user]);
 
     useEffect(() => {
-        if (status === "unauthenticated") {
+        if (!isLoading && !isAuthenticated) {
             router.push("/login");
         }
-    }, [status, router]);
+    }, [isLoading, isAuthenticated, router]);
 
-    if (isLoading) {
+    if (loading) {
         return <div>Loading...</div>;
     }
 
@@ -42,14 +46,10 @@ const JobListPage = () => {
         return <div>Unauthorized access</div>;
     }
 
-    return (
-        <ProtectedRoute requiredRole={userRole}>
-            {userRole === "admin" ? (
-                <JobListAdminLayout />
-            ) : (
-                <JobListApplicantLayout />
-            )}
-        </ProtectedRoute>
+    return userRole === "admin" ? (
+        <JobListAdminLayout />
+    ) : (
+        <JobListApplicantLayout />
     );
 };
 
