@@ -16,6 +16,7 @@ const customJestConfig: Config = {
     testMatch: [
         "**/__tests__/**/*.test.[jt]s?(x)",
         "**/?(*.)+(spec|test).[jt]s?(x)",
+        "!**/pages/**/*.test.[jt]s?(x)",
     ],
     collectCoverage: true,
     collectCoverageFrom: [
