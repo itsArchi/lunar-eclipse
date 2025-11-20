@@ -32,11 +32,26 @@ interface Job {
     };
 }
 
+export async function getJobApplicants(jobId: string) {
+    const { data, error } = await supabase
+        .from("applicants")
+        .select("*")
+        .eq("job_id", jobId);
+
+    if (error) {
+        console.error("Error fetching applicants:", error);
+        throw error;
+    }
+
+    return data;
+}
+
 export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ) {
     console.log("API endpoint called with method:", req.method);
+    console.log("Request query:", req.query);
 
     if (req.method !== "GET" && req.method !== "POST") {
         res.setHeader("Allow", ["GET", "POST"]);
@@ -47,22 +62,47 @@ export default async function handler(
 
     try {
         if (req.method === "GET") {
-            const { data: jobs, error } = await supabase
-                .from("jobs")
-                .select("*")
-                .order("created_at", { ascending: false });
-
-            if (error) {
-                console.error("Supabase error:", error);
-                return res.status(500).json({ message: "Error fetching jobs" });
+            if (req.query.jobId) {
+                try {
+                    const jobId = req.query.jobId as string;
+                    const applicants = await getJobApplicants(jobId);
+                    return res.status(200).json({
+                        success: true,
+                        data: applicants,
+                    });
+                } catch (error) {
+                    console.error("Error in job applicants API:", error);
+                    return res.status(500).json({
+                        success: false,
+                        message: "Error fetching job applicants",
+                    });
+                }
             }
 
-            return res.status(200).json({
-                success: true,
-                data: jobs,
-            });
-        } else if (req.method === "POST") {
-            const { data } = req.body;
+            try {
+                const { data: jobs, error } = await supabase
+                    .from("jobs")
+                    .select("*")
+                    .order("created_at", { ascending: false });
+
+                if (error) {
+                    console.error("Supabase error:", error);
+                    return res
+                        .status(500)
+                        .json({ message: "Error fetching jobs" });
+                }
+
+                return res.status(200).json({
+                    success: true,
+                    data: jobs,
+                });
+            } catch (error) {
+                console.error("Error in jobs API:", error);
+                return res.status(500).json({
+                    success: false,
+                    message: "Internal server error",
+                });
+            }
         }
     } catch (error) {
         console.error("Error in jobs API:", error);

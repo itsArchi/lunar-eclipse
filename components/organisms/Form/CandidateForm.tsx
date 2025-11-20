@@ -4,9 +4,22 @@ import * as yup from "yup";
 import { Button } from "../../atoms/Button/Button";
 import { getAllRegencies } from "../../../utils/domicilesItems/domicilesItems";
 import { useState, useEffect } from "react";
+import { useFormikContext } from "formik";
 import { InputSelect, PhoneInput } from "../../atoms/InputSelect/InputSelect";
 import DatePicker from "../../molecules/DatePicker/DatePicker";
 import RadioButton from "../../atoms/RadioButton/RadioButton";
+
+interface FormValues {
+    name: string;
+    dateOfBirth: string;
+    pronoun: string;
+    email: string;
+    phone: string;
+    linkedin: string;
+    domicile: string;
+    religion: string;
+    salary: string;
+}
 
 const CandidateSchema = yup.object().shape({
     name: yup.string().required("Full name is required"),
@@ -29,8 +42,24 @@ const CandidateSchema = yup.object().shape({
     salary: yup.string().required("Expetation Salary is required"),
 });
 
-const CandidateForm = () => {
+interface CandidateFormProps {
+    jobId?: string;
+}
+
+const CandidateForm: React.FC<CandidateFormProps> = ({ jobId }) => {
     const [items, setItems] = useState<{ id: string; label: string }[]>([]);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [selectedDomicile, setSelectedDomicile] = useState("");
+    const formik = useFormikContext<FormValues>();
+
+    const handleDomicileSelect = (item: { id: string; label: string }) => {
+        setSelectedDomicile(item.label);
+        formik.setFieldValue("domicile", item.id);
+        setSearchTerm("");
+        setIsDropdownOpen(false);
+    };
+
     useEffect(() => {
         let mounted = true;
         getAllRegencies().then((data) => {
@@ -46,9 +75,41 @@ const CandidateForm = () => {
             mounted = false;
         };
     }, []);
+
+    const handleSubmit = async (values: FormValues, { setSubmitting }: any) => {
+        try {
+            const response = await fetch("/api/applicants", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    ...values,
+                    job_id: jobId,
+                    status: "applied",
+                    applied_at: new Date().toISOString(),
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to submit application");
+            }
+
+            const result = await response.json();
+            alert("Application submitted successfully!");
+            // Optionally reset the form
+            // formik.resetForm();
+        } catch (error) {
+            console.error("Error submitting application:", error);
+            alert("Failed to submit application. Please try again.");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
     return (
         <div>
-            <Formik
+            <Formik<FormValues>
                 initialValues={{
                     name: "",
                     dateOfBirth: "",
@@ -61,12 +122,7 @@ const CandidateForm = () => {
                     salary: "",
                 }}
                 validationSchema={CandidateSchema}
-                onSubmit={(values, { setSubmitting }) => {
-                    setTimeout(() => {
-                        alert("Candidate sukses: " + JSON.stringify(values));
-                        setSubmitting(false);
-                    }, 600);
-                }}
+                onSubmit={handleSubmit}
             >
                 {({ isSubmitting }) => (
                     <Form className="flex flex-col gap-4 max-w-[696px] mb-8 w-full space-y-4 font-nunito">
@@ -81,7 +137,7 @@ const CandidateForm = () => {
                                             required
                                         />
                                         {meta.touched && meta.error ? (
-                                            <p className="text-red-500 text-sm mt-1">
+                                            <p className="text-danger-main text-12 mt-1">
                                                 {meta.error}
                                             </p>
                                         ) : null}
@@ -106,45 +162,95 @@ const CandidateForm = () => {
                             />
 
                             <Field name="domicile">
-                                {({ field, meta, form }: FieldProps) => (
-                                    <div>
-                                        <InputSelect
-                                            {...field}
-                                            label="Domicile"
-                                            isMultiple={false}
-                                            isLoading={!items.length}
-                                            required
-                                            items={items}
-                                            placeholder="Choose your domicile"
-                                            defaultSelectedItem={
-                                                field.value
-                                                    ? items.filter(
-                                                          (i) =>
-                                                              i.id ===
-                                                              field.value
-                                                      )
-                                                    : []
-                                            }
-                                            onSelectItems={(selected) => {
-                                                const value =
-                                                    selected?.[0]?.id || "";
-                                                form.setFieldValue(
-                                                    "domicile",
-                                                    value
-                                                );
-                                                form.setFieldTouched(
-                                                    "domicile",
-                                                    true
-                                                );
-                                            }}
-                                        />
-                                        {meta.touched && meta.error && (
-                                            <p className="text-danger-main text-sm mt-1">
-                                                {meta.error}
-                                            </p>
-                                        )}
-                                    </div>
-                                )}
+                                {({ field, meta, form }: FieldProps) => {
+                                    const handleDomicileSelect = (item: {
+                                        id: string;
+                                        label: string;
+                                    }) => {
+                                        setSelectedDomicile(item.label);
+                                        form.setFieldValue("domicile", item.id);
+                                        setSearchTerm("");
+                                        setIsDropdownOpen(false);
+                                    };
+
+                                    return (
+                                        <div className="relative">
+                                            <label className="block text-12 font-400 text-neutral-90 mb-1">
+                                                Domicile{" "}
+                                                <span className="text-danger-main">
+                                                    *
+                                                </span>
+                                            </label>
+                                            <div className="relative">
+                                                <input
+                                                    type="text"
+                                                    value={
+                                                        searchTerm ||
+                                                        selectedDomicile
+                                                    }
+                                                    onChange={(e) => {
+                                                        setSearchTerm(
+                                                            e.target.value
+                                                        );
+                                                        setIsDropdownOpen(true);
+                                                    }}
+                                                    onFocus={() => {
+                                                        setIsDropdownOpen(true);
+                                                        setSearchTerm("");
+                                                    }}
+                                                    onBlur={() =>
+                                                        setTimeout(
+                                                            () =>
+                                                                setIsDropdownOpen(
+                                                                    false
+                                                                ),
+                                                            200
+                                                        )
+                                                    }
+                                                    placeholder="Search your domicile..."
+                                                    className="w-full text-14 font-nunito text-neutral-30 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                />
+                                                {isDropdownOpen && (
+                                                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                                        {items
+                                                            .filter((item) =>
+                                                                item.label
+                                                                    .toLowerCase()
+                                                                    .includes(
+                                                                        searchTerm.toLowerCase()
+                                                                    )
+                                                            )
+                                                            .map((item) => (
+                                                                <div
+                                                                    key={
+                                                                        item.id
+                                                                    }
+                                                                    className={`px-4 py-2 hover:bg-gray-100 cursor-pointer ${
+                                                                        field.value ===
+                                                                        item.id
+                                                                            ? "bg-blue-50"
+                                                                            : ""
+                                                                    }`}
+                                                                    onMouseDown={() =>
+                                                                        handleDomicileSelect(
+                                                                            item
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    {item.label}
+                                                                </div>
+                                                            ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {meta.touched && meta.error && (
+                                                <p className="text-danger-main text-sm mt-1">
+                                                    {meta.error}
+                                                </p>
+                                            )}
+                                        </div>
+                                    );
+                                }}
                             </Field>
 
                             <Field name="email">

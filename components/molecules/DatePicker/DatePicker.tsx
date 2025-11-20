@@ -30,7 +30,7 @@ export default function FormikDatePicker({
 
                 return (
                     <div className={className}>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                        <label className="block text-12 font-400 text-neutral-90 mb-2">
                             {label}
                             {required ? (
                                 <span className="text-red-500"> *</span>
@@ -48,7 +48,7 @@ export default function FormikDatePicker({
                         />
 
                         {meta.touched && meta.error ? (
-                            <p className="text-red-500 text-sm mt-1">
+                            <p className="text-red-500 text-12 mt-1">
                                 {meta.error as string}
                             </p>
                         ) : null}

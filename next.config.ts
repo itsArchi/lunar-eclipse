@@ -3,27 +3,13 @@ import type { NextConfig } from "next";
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     experimental: {
-        turbo: {
-            rules: {
-                "*.svg": {
-                    loaders: ["@svgr/webpack"],
-                    as: "*.js",
-                },
-            },
-        },
-        turbonext: {
-            root: __dirname,
-        },
+        turbo: true,
+        turbonext: true,
+        turbopack: true,
+        swcMinify: true,
     },
-    webpack: (config: any) => {
-        config.watchOptions = {
-            poll: 1000,
-            aggregateTimeout: 300,
-        };
-        return config;
+    turbopack: {
+        root: "./",
     },
-    reactStrictMode: true,
-    swcMinify: true,
 };
-
 export default nextConfig;

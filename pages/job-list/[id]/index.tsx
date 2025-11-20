@@ -2,11 +2,11 @@ import { useState, useEffect } from "react";
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 import DashboardLayout from "../../../components/templates/DashboardLayout/DashboardLayout";
-import { Button } from "../../../components/atoms/Button/Button";
 import CandidateTable from "../../../components/organisms/Table/CabdidatesTable";
 import axios from "axios";
 import Image from "next/image";
 import emptyCandidates from "../../../public/assets/image/backdrop-empty-candidates.svg";
+import { Candidate } from "../../../utils/types/candidate";
 
 interface Job {
     id: string;
@@ -28,23 +28,40 @@ interface ApiCandidate {
     updated_at?: string;
 }
 
-interface Candidate {
-    id: string;
-    fullName: string;
-    email: string;
-    phone: string;
-    domicile: string;
-    gender: string;
-    linkedin: string;
-    job_id?: string;
-    created_at?: string;
-    updated_at?: string;
-}
-
 interface JobDetailProps {
     job: Job | null;
     candidates: Candidate[];
 }
+
+const normalizeCandidate = (raw: any) => {
+    const attributes = raw.metadata?.attributes || raw.attributes || [];
+
+    const map: Record<string, string> = {};
+    attributes.forEach((a: any) => {
+        let k = a.key;
+        if (k === "linkedin_link") k = "linkedin";
+        if (k === "phone_number") k = "phone";
+        map[k] = a.value;
+    });
+
+    const candidate: Candidate = {
+        id: raw.id,
+        job_id: raw.job_id,
+        applied_at: raw.applied_at || raw.created_at || "",
+        metadata: {
+            attributes,
+            map,
+        },
+        full_name: map["full_name"] || "",
+        email: map["email"] || "",
+        phone: map["phone"] || "",
+        domicile: map["domicile"] || "",
+        gender: map["gender"] || "",
+        linkedin: map["linkedin"] || "",
+    };
+
+    return candidate;
+};
 
 const JobListDetailPage = ({
     job,
@@ -54,6 +71,39 @@ const JobListDetailPage = ({
     const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
     const [candidates, setCandidates] =
         useState<Candidate[]>(initialCandidates);
+
+    const fetchJobApplicants = async (jobId: string) => {
+        try {
+            const response = await fetch(`/api/jobs?jobId=${jobId}`);
+            const payload = await response.json();
+
+            if (!payload.success || !Array.isArray(payload.data)) {
+                console.warn("Unexpected payload from /api/jobs", payload);
+                return;
+            }
+
+            const formattedCandidates: Candidate[] = payload.data.map(
+                (raw: any) => normalizeCandidate(raw)
+            );
+
+            setCandidates(formattedCandidates);
+            console.log("Formatted candidates:", formattedCandidates);
+        } catch (error) {
+            console.error("Error fetching applicants:", error);
+        }
+    };
+
+    useEffect(() => {
+        const fetchData = async () => {
+            if (router.query.id) {
+                await fetchJobApplicants(router.query.id as string);
+            }
+        };
+
+        fetchData();
+
+        return () => {};
+    }, [router.query.id]);
 
     console.log("Initial props received:", { job, initialCandidates });
 
@@ -69,7 +119,7 @@ const JobListDetailPage = ({
         return <div>Loading...</div>;
     }
 
-    if (!job) {
+    if (!job && (!candidates || candidates.length === 0)) {
         return (
             <DashboardLayout>
                 <div className="flex flex-col justify-center min-h-[calc(75vh-64px)] p-8 font-nunito">
@@ -83,6 +133,7 @@ const JobListDetailPage = ({
                             height={240}
                             alt="No candidates illustration"
                             className="mb-6"
+                            loading="eager"
                         />
                         <h5 className="text-16 font-700 text-neutral-100 leading-28 mb-2">
                             No candidates found
@@ -100,33 +151,11 @@ const JobListDetailPage = ({
     return (
         <DashboardLayout>
             <div className="p-8">
-                <div className="mb-6">
-                    <Button
-                        type="secondary"
-                        onClick={() => router.back()}
-                        className="mb-6"
-                    >
-                        ← Back to Jobs
-                    </Button>
-                </div>
-
                 <div className="bg-white rounded-lg shadow-md p-8">
                     <div className="flex justify-between items-center mb-6">
                         <h1 className="text-2xl font-bold text-neutral-100">
-                            {job.title} - Manage Candidate
+                            {job?.title}
                         </h1>
-                        <div className="flex gap-4">
-                            <Button type="secondary" onClick={() => {}}>
-                                Export to Excel
-                            </Button>
-                            <Button
-                                type="primary"
-                                onClick={() => {}}
-                                // disabled={selectedCandidates.length === 0}
-                            >
-                                Send Email ({selectedCandidates.length})
-                            </Button>
-                        </div>
                     </div>
 
                     <div className="mt-8">
@@ -145,94 +174,111 @@ const JobListDetailPage = ({
 export const getServerSideProps: GetServerSideProps = async (context) => {
     const { id } = context.params as { id: string };
 
+    const normalizeRaw = (c: any) => {
+        const attributes = c.metadata?.attributes || c.attributes || [];
+        const map: Record<string, string> = {};
+        attributes.forEach((a: any) => {
+            let k = a.key;
+            if (k === "linkedin_link") k = "linkedin";
+            if (k === "phone_number") k = "phone";
+            map[k] = a.value;
+        });
+        return {
+            id: c.id,
+            job_id: c.job_id,
+            applied_at: c.applied_at || c.created_at || "",
+            metadata: { attributes, map },
+            full_name: map["full_name"] || "",
+            email: map["email"] || "",
+            phone: map["phone"] || "",
+            domicile: map["domicile"] || "",
+            gender: map["gender"] || "",
+            linkedin: map["linkedin"] || "",
+        } as any;
+    };
+
     try {
-        const [jobRes, candidatesRes] = await Promise.all([
-            axios.get(
-                `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/jobs?id=eq.${id}`,
-                {
-                    headers: {
-                        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-                        Authorization: `Bearer ${process.env
-                            .NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
-                    },
-                }
-            ),
-            axios.get(
-                `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/candidates?job_id=eq.${id}&select=*`,
-                {
-                    headers: {
-                        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-                        Authorization: `Bearer ${process.env
-                            .NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
-                        "Content-Type": "application/json",
-                        Prefer: "return=representation",
-                    },
-                }
-            ),
-        ]);
-
-        console.log("Job Response:", jobRes.data);
-        console.log("Candidates Response:", candidatesRes.data);
-
-        if (!jobRes.data || jobRes.data.length === 0) {
-            console.log("No job found with id:", id);
-            return { notFound: true };
-        }
-
-        if (!candidatesRes.data || candidatesRes.data.length === 0) {
-            console.log("No candidates found for job id:", id);
-            return {
-                props: {
-                    job: jobRes.data[0],
-                    candidates: [],
+        const jobPromise = axios.get(
+            `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/jobs?id=eq.${id}`,
+            {
+                headers: {
+                    apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+                    Authorization: `Bearer ${process.env
+                        .NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
                 },
-            };
-        }
-
-        const formattedCandidates = (candidatesRes.data || []).map(
-            (candidate: any) => {
-                console.log("Processing candidate:", candidate);
-                const attributes = candidate.attributes || [];
-                const getAttribute = (key: string) => {
-                    const attr = attributes.find(
-                        (attr: any) => attr.key === key
-                    );
-                    console.log(`Getting attribute ${key}:`, attr?.value);
-                    return attr?.value || "";
-                };
-
-                const formattedCandidate = {
-                    id: candidate.id,
-                    fullName: getAttribute("full_name"),
-                    email: getAttribute("email"),
-                    phone: getAttribute("phone"),
-                    domicile: getAttribute("domicile"),
-                    gender: getAttribute("gender"),
-                    linkedin: getAttribute("linkedin_link"),
-                    job_id: candidate.job_id,
-                    created_at: candidate.created_at,
-                    updated_at: candidate.updated_at,
-                };
-
-                console.log("Formatted candidate:", formattedCandidate);
-                return formattedCandidate;
             }
         );
 
-        console.log("Formatted candidates:", formattedCandidates);
+        const candPromise = axios.get(
+            `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/candidates?job_id=eq.${id}`,
+            {
+                headers: {
+                    apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+                    Authorization: `Bearer ${process.env
+                        .NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+                },
+            }
+        );
+
+        const [jobRes, candidatesRes] = await Promise.allSettled([
+            jobPromise,
+            candPromise,
+        ]);
+
+        let job = null;
+        if (jobRes.status === "fulfilled") {
+            const data = jobRes.value?.data;
+            job = Array.isArray(data) && data.length > 0 ? data[0] : null;
+            console.log("SSR: job found?", !!job);
+        } else {
+            console.warn(
+                "SSR: job fetch failed:",
+                jobRes.reason?.response?.status || jobRes.reason
+            );
+            if (jobRes.reason?.response?.data) {
+                console.warn(
+                    "SSR: job fetch response body:",
+                    jobRes.reason.response.data
+                );
+            }
+        }
+
+        let normalizedCandidates: any[] = [];
+        if (candidatesRes.status === "fulfilled") {
+            const raw = candidatesRes.value?.data || [];
+            console.log(
+                "SSR: candidates fetched (count):",
+                Array.isArray(raw) ? raw.length : typeof raw
+            );
+            normalizedCandidates = (Array.isArray(raw) ? raw : []).map(
+                (c: any) => normalizeRaw(c)
+            );
+        } else {
+            console.warn(
+                "SSR: candidates fetch failed:",
+                candidatesRes.reason?.response?.status || candidatesRes.reason
+            );
+            if (candidatesRes.reason?.response?.data) {
+                console.warn(
+                    "SSR: candidates fetch response body:",
+                    candidatesRes.reason.response.data
+                );
+            }
+        }
 
         return {
             props: {
-                job: jobRes.data[0],
-                candidates: formattedCandidates,
+                job,
+                candidates: normalizedCandidates,
             },
         };
     } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Unexpected SSR error:", error);
         return {
             props: {
                 job: null,
                 candidates: [],
+                error: "Failed to load job data",
             },
         };
     }

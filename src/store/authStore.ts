@@ -1,14 +1,12 @@
 import { create } from "zustand";
-import { authService } from "../../utils/auth/auth";
+import { supabase } from "../../utils/supabase/supabase";
 
-export type UserRole = "admin" | "applicant";
-
-export interface User {
+type User = {
     id: string;
     email: string;
     name: string;
-    role: UserRole;
-}
+    role: "admin" | "applicant";
+};
 
 interface AuthStore {
     user: User | null;
@@ -23,42 +21,80 @@ interface AuthStore {
     setUser: (user: User | null) => void;
 }
 
-export const useAuthStore = create<AuthStore>((set, get) => ({
+export const useAuthStore = create<AuthStore>((set) => ({
     user: null,
     isAuthenticated: false,
     isLoading: true,
 
     login: async (email: string, password: string) => {
-        const result = await authService.login(email, password);
+        try {
+            const { data, error } = await supabase
+                .from("users")
+                .select("*")
+                .eq("email", email)
+                .single();
 
-        if (result.success && result.user) {
-            set({ user: result.user, isAuthenticated: true, isLoading: false });
+            if (error || !data) {
+                return { success: false, error: "Invalid email or password" };
+            }
+
+            if (data.password !== password) {
+                return { success: false, error: "Invalid email or password" };
+            }
+
+            const user = {
+                id: data.id,
+                email: data.email,
+                name: data.name,
+                role: data.role,
+            };
+
+            set({ user, isAuthenticated: true, isLoading: false });
             return { success: true };
+        } catch (error) {
+            console.error("Login error:", error);
+            return { success: false, error: "An error occurred during login" };
         }
-
-        return { success: false, error: result.error };
     },
 
     logout: async () => {
-        await authService.logout();
+        await supabase.auth.signOut();
         set({ user: null, isAuthenticated: false, isLoading: false });
     },
 
     checkAuth: async () => {
-        const user = await authService.getCurrentUser();
+        try {
+            const {
+                data: { session },
+            } = await supabase.auth.getSession();
+            if (session?.user) {
+                const { data: userData } = await supabase
+                    .from("users")
+                    .select("*")
+                    .eq("email", session.user.email)
+                    .single();
 
-        if (user) {
-            set({ user, isAuthenticated: true, isLoading: false });
-        } else {
-            set({ user: null, isAuthenticated: false, isLoading: false });
+                if (userData) {
+                    set({
+                        user: {
+                            id: userData.id,
+                            email: userData.email,
+                            name: userData.name,
+                            role: userData.role,
+                        },
+                        isAuthenticated: true,
+                        isLoading: false,
+                    });
+                    return;
+                }
+            }
+        } catch (error) {
+            console.error("Auth check error:", error);
         }
+        set({ user: null, isAuthenticated: false, isLoading: false });
     },
 
     setUser: (user: User | null) => {
-        set({
-            user,
-            isAuthenticated: !!user,
-            isLoading: false,
-        });
+        set({ user, isAuthenticated: !!user, isLoading: false });
     },
 }));

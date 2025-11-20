@@ -27,10 +27,10 @@ export default function RadioButton({
                 return (
                     <div className={className}>
                         {label && (
-                            <label className="block text-sm font-medium text-neutral-100 mb-2">
+                            <label className="block text-12 font-400 text-neutral-90 mb-2">
                                 {label}
                                 {required && (
-                                    <span className="text-red-500"> *</span>
+                                    <span className="text-danger-main"> *</span>
                                 )}
                             </label>
                         )}
@@ -74,7 +74,7 @@ export default function RadioButton({
                                             />
                                         </span>
 
-                                        <span className="text-sm text-neutral-90">
+                                        <span className="text-14 text-neutral-90">
                                             {opt.label}
                                         </span>
                                     </label>
@@ -83,7 +83,7 @@ export default function RadioButton({
                         </div>
 
                         {meta.touched && meta.error && (
-                            <p className="text-red-500 text-sm mt-2">
+                            <p className="text-danger-main text-12 mt-2">
                                 {meta.error}
                             </p>
                         )}

@@ -19,7 +19,7 @@ const CardJobListApplicant = ({
 }) => {
     return (
         <div
-            className={`flex flex-col font-nunito border-2 border-primary-main bg-primary-surface rounded-lg py-3 px-4 gap-2 w-full cursor-pointer ${className}`}
+            className={`flex flex-col font-nunito bg-neutral-20 rounded-lg py-3 px-4 gap-2 w-full cursor-pointer ${className}`}
             onClick={onClick}
         >
             <div className="border-b flex gap-4 pb-4 border-dashed">

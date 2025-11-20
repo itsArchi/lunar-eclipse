@@ -93,9 +93,9 @@ export function PhoneInput({
     return (
         <div className={className}>
             {label && (
-                <label className="block text-sm font-medium text-neutral-100 mb-2">
+                <label className="block text-12 font-400 text-neutral-90 mb-2">
                     {label}
-                    {required && <span className="text-red-500"> *</span>}
+                    {required && <span className="text-danger-main"> *</span>}
                 </label>
             )}
             <div className="relative">
@@ -134,7 +134,6 @@ export function PhoneInput({
                         </svg>
                     </button>
 
-                    {/* Country Dropdown */}
                     {showCountryDropdown && (
                         <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-neutral-40 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
                             {countries.map((country) => (

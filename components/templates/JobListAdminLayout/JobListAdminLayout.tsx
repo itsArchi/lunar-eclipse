@@ -1,13 +1,11 @@
-import Search from "../../../components/atoms/Search/Search";
-import DashboardLayout from "../../../components/templates/DashboardLayout/DashboardLayout";
-import CardAsideJob from "../../../components/molecules/CardAsideJob";
-import { Button } from "../../../components/atoms/Button/Button";
+import Search from "../../atoms/Search/Search";
+import DashboardLayout from "../DashboardLayout/DashboardLayout";
+import CardAsideJob from "../../molecules/CardAsideJob";
 import { useState, useEffect } from "react";
-import Modal from "../../../components/organisms/Modal/Modal";
-import { supabase } from "../../../utils/supabase/supabase";
+import Modal from "../../organisms/Modal/Modal";
 import axios from "axios";
-import CardJobListAdmin from "../../../components/molecules/CardJobListAdmin";
-import EmptyJob from "../../../components/molecules/EmptyJob/EmptyJob";
+import CardJobListAdmin from "../../molecules/CardJobListAdmin";
+import EmptyJob from "../../molecules/EmptyJob/EmptyJob";
 
 interface Job {
     id: string;
